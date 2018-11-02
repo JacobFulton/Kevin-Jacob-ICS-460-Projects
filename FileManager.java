@@ -12,9 +12,12 @@ public class FileManager {
 	private int index;
 	private int packetCount;
 	byte[] fileContent = null;
+	private int headerLength;
+
 	public FileManager(int packetLength) {
+	    headerLength = 2;
 		index = 0;
-		packetCount = 1;
+		packetCount = 0;
 		this.packetLength = packetLength;
 	}
 
@@ -59,24 +62,36 @@ public class FileManager {
 			}
     }
 
+    public boolean isCorrupted(byte[] packet){
+        byte[] header = extractPacketHeader(packet);
+        if(header[0] == (byte) -128) //if the first bit is equal to 1111 1111, then that packet is corrupted.
+            return true;
+        return false;
+    }
+
     public byte[] extractPacketHeader(byte[] packet){
 
-        byte[] header = Arrays.copyOfRange(packet, 0, 15); //Copies header for header size of 16
+        byte[] header = Arrays.copyOfRange(packet, 0, headerLength-1); //Copies header for header size of 16
         return header;
     }
 
     public byte[] extractPacket(byte[] packet){
 
-        byte[] header = Arrays.copyOfRange(packet, 16, packet.length);//Copies packet after header
+        byte[] header = Arrays.copyOfRange(packet, headerLength, packet.length);//Copies packet after header
         return header;
     }
 
 
     public void addPacket(byte[] packet) {
+        if(isCorrupted(packet) || packet[1] != (byte) packetCount){
+            return; //does not add packet if the packet is corrupted or if it's not the next packet.
+        }
     	int pStart = index;
     	int pEnd = index+packet.length-1;
-    	System.out.println("R["+packetCount+"]-["+pStart+"]-["+pEnd+"]");
+
+    	System.out.println("R["+(packetCount+1)+"]-["+pStart+"]-["+pEnd+"]");
     	//System.out.println(index);
+
     	if(fileContent == null) {
     		fileContent = new byte[1024];
     	}else {
@@ -87,8 +102,11 @@ public class FileManager {
     	}
 
     	byte[] temp = new byte[fileContent.length + packet.length];
+
     	System.arraycopy(fileContent, 0, temp, 0, fileContent.length);
+
     	System.arraycopy(packet, 0, temp, 0, packet.length);
+
     	fileContent = temp;
     	//for(int i = 0; i < packet.length; i++) {
     	//	fileContent[i+index] = packet[i];
@@ -99,6 +117,7 @@ public class FileManager {
 
     public byte[] nextPacket() {
     	int pStart = index;
+
     	if((index+packetLength) > fileContent.length){
     		packetLength = fileContent.length - index;
     	}else if((index == fileContent.length)) {
@@ -107,12 +126,19 @@ public class FileManager {
     	}
 
     	int pEnd = index+packetLength-1;
-    	System.out.println("S["+packetCount+"]-["+pStart+"]-["+pEnd+"]");
-    	byte[] packet = new byte[packetLength];
-    	for(int i = 0; i < packetLength; i++) {
-    		packet[i] = fileContent[index];
-    		index++;
-    	}
+
+    	System.out.println("S["+(packetCount+1)+"]-["+pStart+"]-["+pEnd+"]");
+
+    	byte[] packet = new byte[packetLength+headerLength];
+
+    	System.arraycopy(fileContent, index, packet, headerLength-1, packetLength);
+    	if(Math.random() < 0.1)
+    	    packet[0] = (byte) -128; //corrupts about 1 in 10 packets, on average.
+    	packet[1] = (byte) packetCount;
+    	//for(int i = 0; i < packetLength; i++) {
+    	//	packet[i] = fileContent[index];
+    	//	index++;
+    	//}
     	packetCount++;
     	return packet;
     }
