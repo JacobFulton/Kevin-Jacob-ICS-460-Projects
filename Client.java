@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.*;
 import java.util.*;
 
 
@@ -8,68 +9,91 @@ public class Client {
 
 
 
-	private final static int PORT = 2001;
+    private final static int PORT = 2001;
 
-	private final static String HOSTNAME = "127.0.0.1";
+    private final static String HOSTNAME = "127.0.0.1";
 
 
 
-	public static void main(String[] args) throws IOException {
 
-		try (DatagramSocket socket = new DatagramSocket(0)){
 
-			FileManager fileM = new FileManager(1024);
+    public static void main(String[] args) throws IOException {
+        int ackno = 1;
 
-			System.out.println("enter download path");
+        try (DatagramSocket socket = new DatagramSocket(0)){
 
-			Scanner input = new Scanner(System.in);
+            FileManager fileM = new FileManager(1024);
 
-			String path = input.next();
+            System.out.println("enter download path");
 
-			socket.setSoTimeout(10000);
+            Scanner input = new Scanner(System.in);
 
-			InetAddress host = InetAddress.getByName(HOSTNAME);
+            String path = input.next();
 
-			DatagramPacket request = new DatagramPacket(new byte[1], 1, host, PORT);
+            socket.setSoTimeout(10000);
 
-			DatagramPacket response = new DatagramPacket(new byte[1024], 1024);
+            InetAddress host = InetAddress.getByName(HOSTNAME);
 
-			socket.send(request);
+            DatagramPacket request = new DatagramPacket(new byte[1], 1, host, PORT);
 
-			FileOutputStream fos = new FileOutputStream(path);
+            DatagramPacket response = new DatagramPacket(new byte[1024], 1024);
 
-			socket.receive(response);
-			boolean end = true;
-			while(response.getLength() != 0 && end) {
-				try {
-					fileM.addPacket(response.getData());
-					if(response.getLength() < 1024)
-					   break;
-					socket.receive(response);
-				} catch (SocketTimeoutException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					end = false;
 
-				}
 
-			}
+            socket.send(request);
 
-			fos.write(fileM.fileContent);
+            FileOutputStream fos = new FileOutputStream(path);
 
-			fos.close();
+            socket.receive(response);
+            boolean end = true;
+            while(response.getLength() != 0 && end) {
+                try {
+                    fileM.addPacket(response.getData());
 
-			System.out.println("File created.");
+                    //Set up acknowledgement
+                    byte[] ackArray = new byte[8];
+                    ByteBuffer ackBB = ByteBuffer.allocate(8);
+                    if(Math.random() < .1)
+                        ackBB.putInt(1);
+                    else
+                        ackBB.putInt(0);
+                    ackBB.putInt(ackno);
+                    ackBB.rewind();
+                    ackBB.get(ackArray);
+                    DatagramPacket acknoPacket = new DatagramPacket(ackArray, ackArray.length, host, PORT);
+                    socket.send(acknoPacket);
+                    System.out.println("Sending ack " + ackno);
+                    socket.setSoTimeout(3000);
+                    ackno++;
 
-			//Testing System.out.println(response.getData().length);
+                    if(response.getLength() < 1024)
+                        break;
 
-		} catch (IOException ex) {
+                    socket.receive(response);
+                } catch (SocketTimeoutException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    end = false;
 
-			ex.printStackTrace();
+                }
 
-		}
+            }
 
-	}
+            fos.write(fileM.fileContent);
+
+            fos.close();
+
+            System.out.println("File created.");
+
+            //Testing System.out.println(response.getData().length);
+
+        } catch (IOException ex) {
+
+            ex.printStackTrace();
+
+        }
+
+    }
 
 
 

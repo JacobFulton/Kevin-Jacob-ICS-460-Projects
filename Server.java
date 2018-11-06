@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.nio.*;
 import java.util.*;
 
 
@@ -44,6 +45,7 @@ public class Server {
                 try {
 
                     DatagramPacket request = new DatagramPacket(new byte[1024], 1024);
+                    DatagramPacket acknowledgement = new DatagramPacket(new byte[1024],1024);
 
                     socket.receive(request);
 
@@ -53,19 +55,24 @@ public class Server {
                     while(packet != null || init) {
                         init = false;
                         packet = fileM.nextPacket();
-
-                        DatagramPacket response = new DatagramPacket(packet, fileM.getPacketLength(),
-                                                                         request.getAddress(), request.getPort());
-
+                        DatagramPacket response = new DatagramPacket(packet, fileM.getPacketLength(), request.getAddress(), request.getPort());
+                        byte[] ackPacket = new byte[8];
                         socket.send(response);
-                        if(packet.length < 1024){
+                        System.out.println("waiting for ack");
+                        socket.receive(acknowledgement);
+                        System.out.println("ack received");
 
-                        byte[] end = null;
-                        socket.send( new DatagramPacket(end, 0, request.getAddress(), request.getPort()));
-                        }
+                        //Break down acknowledgement
+                        byte [] acknodata = acknowledgement.getData();
+                        ByteBuffer bb = ByteBuffer.wrap(acknodata);
+                        int corrupted = bb.getInt();
+                        int ackno = bb.getInt();
+                        System.out.println(ackno);
+                        System.out.println(corrupted);
+
                     }
-                    System.out.println("sending:null");
-
+                    byte[] end = null;
+                    socket.send( new DatagramPacket(end, 0, request.getAddress(), request.getPort()));
 
 
                 //System.out.println("File Sent");
