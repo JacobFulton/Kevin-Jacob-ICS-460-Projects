@@ -107,7 +107,7 @@ public class FileManager {
             packetLength = fileContent.length - index+2;
         }
 
-        int pEnd = index+packetLength-1;
+        int pEnd = index+packetLength-3;
         System.out.println("S["+packetCount+"]-["+pStart+"]-["+pEnd+"]");
         byte[] packet = new byte[packetLength];
         for(int i = 2; i < packetLength; i++) {
