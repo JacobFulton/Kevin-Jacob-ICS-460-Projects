@@ -60,7 +60,7 @@ public class Server {
                         socket.send(response);
                         System.out.println("waiting for ack");
                         socket.receive(acknowledgement);
-                        System.out.println("ack received");
+                        System.out.println("[AckRcvd]:");
 
                         //Break down acknowledgement
                         byte [] acknodata = acknowledgement.getData();
