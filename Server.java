@@ -60,9 +60,12 @@ public class Server {
                         DatagramPacket response = new DatagramPacket(packet, fileM.getPacketLength(), request.getAddress(), request.getPort());
                         byte[] ackPacket = new byte[8];
                         socket.send(response);
+
                         if(ackno == fileM.getSeqno(packet))
                             System.out.println("[ReSENDing]:"+fileM.getSeqno(packet) );
+
                         System.out.println("[SENDing]:"+fileM.getSeqno(packet) );
+
                         socket.receive(acknowledgement);
                         System.out.print("[AckRcvd]:");
 
@@ -72,8 +75,9 @@ public class Server {
                         int corrupted = bb.getInt();
                         ackno = bb.getInt();
                         System.out.print(ackno);
+
                         if(corrupted == 1)
-                        System.out.println(" [ErrAck]");
+                            System.out.println(" [ErrAck]");
                         else{
                             System.out.println(" [MoveWnd]");
                             packet = fileM.nextPacket();

@@ -48,12 +48,15 @@ public class Client {
             boolean end = true;
             while(response.getLength() != 0 && end) {
                 try {
+
                     if((int)fileM.getAckno(response.getData()) > ackno) //compares ackno of packet to ackno of last ack.
                     fileM.addPacket(response.getData()); //adds packet only if ackno of packet is greater
+
                     int checksum;
                     //Set up acknowledgement
                     byte[] ackArray = new byte[8];
                     ByteBuffer ackBB = ByteBuffer.allocate(8);
+
                     if(Math.random() < .1)
                         checksum = 1;
                     else
@@ -67,6 +70,7 @@ public class Client {
 
                     socket.send(acknoPacket);
                     System.out.print("[SENDing ACK]: " + ackno);
+
                     if(checksum == 0){
                         System.out.println(" [SENT]");
                     }else
