@@ -52,23 +52,32 @@ public class Server {
                     System.out.println("Request Received.");
                     byte[] packet = null;
                     boolean init = true;
+                    int ackno = 0;
+                    packet = fileM.nextPacket();
                     while(packet != null || init) {
                         init = false;
-                        packet = fileM.nextPacket();
+
                         DatagramPacket response = new DatagramPacket(packet, fileM.getPacketLength(), request.getAddress(), request.getPort());
                         byte[] ackPacket = new byte[8];
                         socket.send(response);
-                        System.out.println("waiting for ack");
+                        if(ackno == fileM.getSeqno(packet))
+                            System.out.println("[ReSENDing]:"+fileM.getSeqno(packet) );
+                        System.out.println("[SENDing]:"+fileM.getSeqno(packet) );
                         socket.receive(acknowledgement);
-                        System.out.println("[AckRcvd]:");
+                        System.out.print("[AckRcvd]:");
 
                         //Break down acknowledgement
                         byte [] acknodata = acknowledgement.getData();
                         ByteBuffer bb = ByteBuffer.wrap(acknodata);
                         int corrupted = bb.getInt();
-                        int ackno = bb.getInt();
-                        System.out.println(ackno);
-                        System.out.println(corrupted);
+                        ackno = bb.getInt();
+                        System.out.print(ackno);
+                        if(corrupted == 1)
+                        System.out.println(" [ErrAck]");
+                        else{
+                            System.out.println(" [MoveWnd]");
+                            packet = fileM.nextPacket();
+                        }
 
                     }
                     byte[] end = null;

@@ -106,8 +106,8 @@ public class FileManager {
     public void addPacket(byte[] packet) {
         int pStart = index;
         int pEnd = index+packet.length-(1+header);
-        System.out.println("R["+packetCount+"]-["+pStart+"]-["+pEnd+"]");
-        System.out.println(getHeader(packet));
+        //System.out.println("["+pStart+"]-["+pEnd+"]");
+        //System.out.println(getHeader(packet));
 
         if(fileContent == null) {
             fileContent = new byte[1024];
@@ -139,7 +139,7 @@ public class FileManager {
         }
 
         int pEnd = index+packetLength-(1+header);
-        System.out.println("S["+packetCount+"]-["+pStart+"]-["+pEnd+"]");
+        //System.out.println(" ["+pStart+"]-["+pEnd+"]");
         byte[] packet = new byte[packetLength];
         for(int i = header; i < packetLength; i++) {
             packet[i] = fileContent[index];
