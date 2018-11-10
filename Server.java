@@ -59,7 +59,11 @@ public class Server {
 
                         DatagramPacket response = new DatagramPacket(packet, fileM.getPacketLength(), request.getAddress(), request.getPort());
                         byte[] ackPacket = new byte[8];
+                        if(Math.random() < .02){
+                            System.out.println("[SENDing]:"+fileM.getSeqno(packet) + " [DRPT]" );
+                        }else{
                         socket.send(response);
+
 
                         if(ackno == fileM.getSeqno(packet))
                             System.out.println("[ReSENDing]:"+fileM.getSeqno(packet) );
@@ -84,7 +88,12 @@ public class Server {
                         else{
                             System.out.println(" [MoveWnd]");
                             packet = fileM.nextPacket();
+
                         }
+                        }
+
+                        if(response.getLength() < 1024)
+                            break;
 
                     }
                     byte[] end = null;

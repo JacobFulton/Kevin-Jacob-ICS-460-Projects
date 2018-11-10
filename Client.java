@@ -50,12 +50,12 @@ public class Client {
                 try {
 
                     if(fileM.isCorrupted((response.getData()))){
-                        System.out.println("NOTadded(corr): ");
+                        System.out.println("[NOTadded(corr)]: ");
                     }else if((int)fileM.getSeqno(response.getData()) > ackno){ //compares ackno of packet to ackno of last ack.
                         fileM.addPacket(response.getData()); //adds packet only if ackno of packet is greater
-                        System.out.println("added: "+(int)fileM.getSeqno(response.getData()));
+                        System.out.println("[ADDed]: "+(int)fileM.getSeqno(response.getData()));
                     }else{
-                        System.out.println("NOTadded(doup): "+(int)fileM.getSeqno(response.getData()));
+                        System.out.println("[NOTadded(doup)]: "+(int)fileM.getSeqno(response.getData()));
                     }
                     int checksum;
                     //Set up acknowledgement
@@ -78,16 +78,20 @@ public class Client {
                     ackBB.get(ackArray);
                     DatagramPacket acknoPacket = new DatagramPacket(ackArray, ackArray.length, host, PORT);
 
+                    if(Math.random() < .1){
+                        System.out.println("[SENDing ACK]: " + ackno +" [DRPT]");
+                    }else{
+                        socket.send(acknoPacket);
+                        System.out.print("[SENDing ACK]: " + ackno);
+                        if(checksum == 0){
+                            System.out.println(" [SENT]");
+                        }else
+                            System.out.println(" [ERR]");
+                    }
 
-                    socket.send(acknoPacket);
-                    System.out.print("[SENDing ACK]: " + ackno);
 
-                    if(checksum == 0){
-                        System.out.println(" [SENT]");
-                    }else
-                        System.out.println(" [ERR]");
 
-                    socket.setSoTimeout(3000);
+                    socket.setSoTimeout(2000);
 
 
                     if(response.getLength() < 1024)
@@ -96,8 +100,8 @@ public class Client {
                     socket.receive(response);
                 } catch (SocketTimeoutException e) {
                     // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    end = false;
+                    //e.printStackTrace();
+
 
                 }
 
