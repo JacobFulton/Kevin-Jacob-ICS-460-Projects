@@ -51,8 +51,8 @@ public class Client {
 
                     if(fileM.isCorrupted((response.getData()))){
                         System.out.println("[NOTadded(corr)]: ");
-                    }else if((int)fileM.getSeqno(response.getData()) > ackno){ //compares ackno of packet to ackno of last ack.
-                        fileM.addPacket(response.getData()); //adds packet only if ackno of packet is greater
+                    }else if((int)fileM.getSeqno(response.getData()) > ackno){ //compares ackno of packet to seqno of last ack.
+                        fileM.addPacket(response.getData()); //adds packet only if the next packet is sent
                         System.out.println("[ADDed]: "+(int)fileM.getSeqno(response.getData()));
                     }else{
                         System.out.println("[NOTadded(doup)]: "+(int)fileM.getSeqno(response.getData()));
@@ -69,7 +69,7 @@ public class Client {
 
 
                     if(!fileM.isCorrupted((response.getData()))){
-                    ackno = (int)fileM.getSeqno(response.getData()); //sets ackno of ack to ackno of packet.
+                    ackno = (int)fileM.getSeqno(response.getData()); //sets ackno of ack to seqno of packet.
                     }else
                         checksum = 1;
                     ackBB.putInt(checksum);
