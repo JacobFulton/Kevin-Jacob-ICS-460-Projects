@@ -124,7 +124,7 @@ public class FileManager {
         byte[] temp = new byte[index+packet.length];
         System.arraycopy(fileContent, 0, temp, 0, index);
         fileContent = temp;
-        //System.out.println(fileContent.length);
+        //System.out.println(fileContent.length);zqwas2
         }
 
         for(int i = header; i < packet.length; i++) {
