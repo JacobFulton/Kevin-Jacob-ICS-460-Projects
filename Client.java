@@ -50,7 +50,7 @@ public class Client {
                 try {
 
                     if(fileM.isCorrupted((response.getData()))){
-                        System.out.println("[NOTadded(corr)]: ");
+                        System.out.println("[NOTadded(corr)]: "+(int)fileM.getSeqno(response.getData()));
                     }else if((int)fileM.getSeqno(response.getData()) > ackno){ //compares ackno of packet to seqno of last ack.
                         fileM.addPacket(response.getData()); //adds packet only if the next packet is sent
                         System.out.println("[ADDed]: "+(int)fileM.getSeqno(response.getData()));
