@@ -18,7 +18,7 @@ public class Client {
 
 
     public static void main(String[] args) throws IOException {
-        int ackno = 1;
+        int ackno = 0;
 
         try (DatagramSocket socket = new DatagramSocket(0)){
 
@@ -49,9 +49,14 @@ public class Client {
             while(response.getLength() != 0 && end) {
                 try {
 
-                    if((int)fileM.getAckno(response.getData()) > ackno) //compares ackno of packet to ackno of last ack.
-                    fileM.addPacket(response.getData()); //adds packet only if ackno of packet is greater
-
+                    if(fileM.isCorrupted((response.getData()))){
+                        System.out.println("NOTadded(corr): ");
+                    }else if((int)fileM.getSeqno(response.getData()) > ackno){ //compares ackno of packet to ackno of last ack.
+                        fileM.addPacket(response.getData()); //adds packet only if ackno of packet is greater
+                        System.out.println("added: "+(int)fileM.getSeqno(response.getData()));
+                    }else{
+                        System.out.println("NOTadded(doup): "+(int)fileM.getSeqno(response.getData()));
+                    }
                     int checksum;
                     //Set up acknowledgement
                     byte[] ackArray = new byte[8];
@@ -61,12 +66,18 @@ public class Client {
                         checksum = 1;
                     else
                         checksum = 0;
-                    ackno = (int)fileM.getAckno(response.getData()); //sets ackno of ack to ackno of packet.
+
+
+                    if(!fileM.isCorrupted((response.getData()))){
+                    ackno = (int)fileM.getSeqno(response.getData()); //sets ackno of ack to ackno of packet.
+                    }else
+                        checksum = 1;
                     ackBB.putInt(checksum);
                     ackBB.putInt(ackno);
                     ackBB.rewind();
                     ackBB.get(ackArray);
                     DatagramPacket acknoPacket = new DatagramPacket(ackArray, ackArray.length, host, PORT);
+
 
                     socket.send(acknoPacket);
                     System.out.print("[SENDing ACK]: " + ackno);
@@ -75,6 +86,7 @@ public class Client {
                         System.out.println(" [SENT]");
                     }else
                         System.out.println(" [ERR]");
+
                     socket.setSoTimeout(3000);
 
 

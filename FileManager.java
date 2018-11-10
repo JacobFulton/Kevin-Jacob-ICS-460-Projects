@@ -76,6 +76,15 @@ public class FileManager {
         return false;
     }
 
+    public void Corrupt(byte[] packet){
+        packet[0] = (byte) 0;
+        packet[1] = (byte) 0;
+        if(Math.random() < 0.1){
+            packet[0] = (byte)((checksumCor>>8)&255); //"corrupts" about 1 in 10 packets, on average.
+            packet[1]= (byte)(checksumCor&255);
+            }
+    }
+
     public int getChecksum(byte[] packet){
         int checksum = (((packet[0]<<8)&65280)|(packet[1]&255));
         return checksum;
@@ -147,12 +156,7 @@ public class FileManager {
             //System.out.println(index+"::"+fileContent.length);
         }
 
-        packet[0] = (byte) 0;
-        packet[1] = (byte) 0;
-        if(Math.random() < 0.1){
-            packet[0] = (byte)((checksumCor>>8)&255); //"corrupts" about 1 in 10 packets, on average.
-            packet[1]= (byte)(checksumCor&255);
-            }
+        Corrupt(packet);
 
         packet[2] = (byte)((packetLength>>8)&255);
         packet[3] = (byte)(packetLength&255);

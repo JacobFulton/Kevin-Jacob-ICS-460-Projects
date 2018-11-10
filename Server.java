@@ -63,8 +63,8 @@ public class Server {
 
                         if(ackno == fileM.getSeqno(packet))
                             System.out.println("[ReSENDing]:"+fileM.getSeqno(packet) );
-
-                        System.out.println("[SENDing]:"+fileM.getSeqno(packet) );
+                        else
+                            System.out.println("[SENDing]:"+fileM.getSeqno(packet) );
 
                         socket.receive(acknowledgement);
                         System.out.print("[AckRcvd]:");
@@ -76,8 +76,11 @@ public class Server {
                         ackno = bb.getInt();
                         System.out.print(ackno);
 
-                        if(corrupted == 1)
+
+                        if(corrupted == 1){
+                            fileM.Corrupt(packet);
                             System.out.println(" [ErrAck]");
+                        }
                         else{
                             System.out.println(" [MoveWnd]");
                             packet = fileM.nextPacket();
