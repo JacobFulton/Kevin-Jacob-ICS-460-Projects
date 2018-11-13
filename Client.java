@@ -48,14 +48,17 @@ public class Client {
             boolean end = true;
             while(response.getLength() != 0 && end) {
                 try {
-
+                    int byteOS = (int) ((fileM.getSeqno(response.getData())-1)*1012);
                     if(fileM.isCorrupted((response.getData()))){
-                        System.out.println("[NOTadded(corr)]: "+(int)fileM.getSeqno(response.getData()));
+                        System.out.println("[RECV]: "+(int)fileM.getSeqno(response.getData()) + " " +byteOS + ":" +
+                            (byteOS+response.getData().length-12)+" " + System.currentTimeMillis() + " [CRPT]");
                     }else if((int)fileM.getSeqno(response.getData()) > ackno){ //compares ackno of packet to seqno of last ack.
                         fileM.addPacket(response.getData()); //adds packet only if the next packet is sent
-                        System.out.println("[ADDed]: "+(int)fileM.getSeqno(response.getData()));
+                        System.out.println("[RECV]: "+(int)fileM.getSeqno(response.getData()) + " " + byteOS + ":" +
+                            (byteOS+response.getData().length-12)+" " + System.currentTimeMillis() + " [RECV]");
                     }else{
-                        System.out.println("[NOTadded(doup)]: "+(int)fileM.getSeqno(response.getData()));
+                        System.out.println("[RECV]: "+(int)fileM.getSeqno(response.getData()) + " " +byteOS + ":" +
+                            (byteOS+response.getData().length-12)+" " +System.currentTimeMillis() + " [!Seq]");
                     }
                     int checksum;
                     //Set up acknowledgement
@@ -79,10 +82,12 @@ public class Client {
                     DatagramPacket acknoPacket = new DatagramPacket(ackArray, ackArray.length, host, PORT);
 
                     if(Math.random() < .1){
-                        System.out.println("[SENDing ACK]: " + ackno +" [DRPT]");
+                        System.out.println("[SENDing ACK]: " + ackno + " " + byteOS + ":" +
+                            (byteOS+response.getData().length-12)+" " +System.currentTimeMillis() + " [DRPT]");
                     }else{
                         socket.send(acknoPacket);
-                        System.out.print("[SENDing ACK]: " + ackno);
+                        System.out.print("[SENDing ACK]: " + ackno + " " +byteOS + ":" +
+                            (byteOS+response.getData().length-12)+" " +System.currentTimeMillis());
                         if(checksum == 0){
                             System.out.println(" [SENT]");
                         }else
@@ -90,8 +95,6 @@ public class Client {
                     }
 
 
-
-                    socket.setSoTimeout(2000);
 
 
                     if(response.getLength() < 1024)
