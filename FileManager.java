@@ -13,6 +13,7 @@ public class FileManager {
     private int checksumCor;
     private int packetCount;
     byte[] fileContent = null;
+    byte[] packetContent = null;
     private int fileSize;
     public FileManager(int packetLength) {
         index = 0;
@@ -22,6 +23,11 @@ public class FileManager {
         this.packetLength = packetLength;
     }
 
+    public byte[] getPacket(){
+        if (packetContent != null)
+        Corrupt(packetContent);
+        return packetContent;
+    }
 
     public int getIndex() {
         return index;
@@ -173,7 +179,7 @@ public class FileManager {
         packet[5] = (byte)((packetCount>>16)&255);
         packet[6] = (byte)((packetCount>>8)&255);
         packet[7] = (byte)(packetCount&255);
-
+        packetContent = packet;
         return packet;
     }
 }
